@@ -1,0 +1,321 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Express Option — Deposit</title>
+  <style>
+    :root{
+      --blue:#0d6efd;
+      --dark-blue:#0b5ed7;
+      --muted:#6c757d;
+      --bg:#ffffff;
+      --card:#f8fbff;
+    }
+    *{box-sizing:border-box}
+    body{font-family:Inter, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial; background:var(--bg); color:#111; margin:0; padding:32px;}
+    .container{max-width:980px;margin:0 auto}
+    header{display:flex;align-items:center;gap:16px;margin-bottom:20px}
+    .logo{height:56px;width:56px;border-radius:12px;background:linear-gradient(135deg,var(--blue),var(--dark-blue));display:flex;align-items:center;justify-content:center;color:white;font-weight:700;font-size:18px}
+    h1{margin:0;font-size:20px}
+    p.lead{margin:4px 0 0;color:var(--muted)}
+
+    .grid{display:grid;grid-template-columns:1fr 360px;gap:20px}
+    @media (max-width:880px){.grid{grid-template-columns:1fr;}}
+
+    .card{background:var(--card);border-radius:12px;padding:18px;box-shadow:0 6px 18px rgba(13,110,253,0.06);}
+    .section-title{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px}
+    .section-title h2{margin:0;font-size:16px}
+
+    .form-row{display:flex;gap:12px;align-items:center;margin-bottom:12px}
+    label{font-size:13px;color:var(--muted);min-width:110px}
+    select, input[type="text"], input[type="number"], textarea{flex:1;padding:10px;border-radius:8px;border:1px solid #e6eefc;background:white}
+    select:focus, input:focus, textarea:focus{outline:2px solid rgba(13,110,253,0.12);}
+
+    .crypto-list{display:flex;flex-direction:column;gap:10px}
+    .crypto-item{display:flex;align-items:center;gap:12px;padding:10px;border-radius:10px;border:1px solid rgba(13,110,253,0.08);background:white;cursor:pointer}
+    .crypto-item.active{box-shadow:0 6px 14px rgba(13,110,253,0.08);border:1px solid rgba(13,110,253,0.18)}
+    .crypto-item img{width:36px;height:36px;border-radius:8px;object-fit:cover}
+    .crypto-meta{flex:1}
+    .crypto-meta strong{display:block}
+    .small{font-size:12px;color:var(--muted)}
+
+    .address-box{background:#fff;border:1px dashed rgba(13,110,253,0.12);padding:12px;border-radius:8px;word-break:break-all}
+    .address-row{display:flex;gap:8px;align-items:center;margin-top:8px}
+    .btn{display:inline-flex;align-items:center;gap:8px;padding:8px 12px;border-radius:8px;border:0;background:var(--blue);color:white;font-weight:600;cursor:pointer}
+    .btn.ghost{background:transparent;color:var(--blue);border:1px solid rgba(13,110,253,0.12)}
+    .btn.copy{padding:8px 10px}
+
+    .note{font-size:13px;color:#0b5ed7;background:linear-gradient(90deg, rgba(13,110,253,0.04), transparent);padding:10px;border-radius:8px}
+
+    .right .card{position:sticky;top:24px}
+    .summary-row{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px}
+
+    footer{margin-top:18px;font-size:13px;color:var(--muted)}
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header>
+        <div class="brand">
+      <img src="../../images/logo.png" alt="Express Option Logo" class="logo-img" />
+      <div>
+<!--        <div class="title">Express Option</div>-->
+<!--        <div class="tag">Copy & Crypto Trading</div>-->
+      </div>
+    </div>
+      <div>
+        <h1 style="color: white;">Deposit</h1>
+        <p class="lead">Deposit cryptocurrency to your Express Option account. Select a coin, copy the wallet address and send funds from your external wallet.</p>
+      </div>
+    </header>
+
+    <div class="grid">
+      <main>
+        <div class="card">
+          <div class="section-title"><h2>Select cryptocurrency</h2></div>
+
+          <div class="crypto-list" id="cryptoList">
+            <!-- items inserted by JS -->
+          </div>
+
+          <div style="margin-top:14px">
+            <div class="section-title"><h2>Deposit details</h2></div>
+
+            <div class="form-row">
+              <label>Amount</label>
+              <input id="amount" type="number" inputmode="decimal" min="0" placeholder="0.00" />
+            </div>
+
+            <div class="form-row">
+              <label>Address</label>
+              <div style="flex:1">
+                <div class="address-box" id="addressBox">Select a cryptocurrency to see the deposit address.</div>
+                <div class="address-row">
+                  <button class="btn copy" id="copyBtn">Copy address</button>
+<!--                  <button class="btn ghost" id="showQr" onclick="alert('QR preview not implemented in this demo')">Show QR</button>-->
+                </div>
+              </div>
+            </div>
+
+            <div class="form-row">
+              <label>Network</label>
+              <select id="networkSelect" disabled>
+                <option value="">Select network</option>
+              </select>
+            </div>
+
+            <div style="display:flex;gap:10px;margin-top:14px;align-items:center">
+              <button class="btn" id="markPaid">I've sent the funds</button>
+              <button class="btn ghost" id="resetBtn">Reset</button>
+            </div>
+          </div>
+        </div>
+
+        <footer>Need help? Contact <a href="mailto:support@example.com">expressoptionofficial@gmail.com</a></footer>
+      </main>
+
+      <aside class="right">
+        <div class="card" style="background-color: aliceblue;">
+          <div class="section-title"><h2>Deposit summary</h2></div>
+          <div class="summary-row"><span>Selected</span><strong id="summaryCoin">—</strong></div>
+          <div class="summary-row"><span>Amount</span><strong id="summaryAmount">—</strong></div>
+          <div class="summary-row"><span>Network</span><strong id="summaryNetwork">—</strong></div>
+          <div style="height:12px"></div>
+          <div class="section-title"><h2>How to deposit</h2></div>
+          <ol style="padding-left:18px;margin:0">
+            <li>Choose a coin and network (if applicable).</li>
+            <li>Copy the address and send the exact amount from your external wallet.</li>
+            <li>Wait for the required confirmations — deposits may take several minutes to complete.</li>
+          </ol>
+        </div>
+      </aside>
+    </div>
+  </div>
+
+
+  <script>
+    // Example placeholder addresses (clearly fake / example)
+    const CRYPTOS = [
+      {id:'BTC', name:'Bitcoin', desc:'SegWit (bech32)', icon:'https://cdn.jsdelivr.net/gh/atomiclabs/cryptocurrency-icons@master/svg/color/btc.svg', addresses:{"BTC":"bc1q8zzrfatcrwgtfq2dkhz97cwdf7fk0d7xh53s5d"}, networks:['BTC']},
+      {id:'ETH', name:'Ethereum', desc:'ERC-20', icon:'https://cdn.jsdelivr.net/gh/atomiclabs/cryptocurrency-icons@master/svg/color/eth.svg', addresses:{"ETH":"0xd1d59f598902b997e8269c70221eF9f197B0b9e2"}, networks:['ERC20']},
+      {id:'USDT', name:'Tether (USDT)', desc:'USDT — ERC20 / TRC20 / BEP20', icon:'https://cdn.jsdelivr.net/gh/atomiclabs/cryptocurrency-icons@master/svg/color/usdt.svg', addresses:{"ERC20":"0xd1d59f598902b997e8269c70221eF9f197B0b9e2","TRC20":"TXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX","BEP20":"0xExampleBEP200000000000000000000"}, networks:['ERC20','TRC20','BEP20']},
+      {id:'BNB', name:'BNB Smart Chain', desc:'BEP-20', icon:'https://cdn.jsdelivr.net/gh/atomiclabs/cryptocurrency-icons@master/svg/color/bnb.svg', addresses:{"BEP20":"0xd1d59f598902b997e8269c70221eF9f197B0b9e2"}, networks:['BEP20']},
+      {id:'LTC', name:'Litecoin', desc:'LTC', icon:'https://cdn.jsdelivr.net/gh/atomiclabs/cryptocurrency-icons@master/svg/color/ltc.svg', addresses:{"LTC":"LQncojHvW4tYDsC7jYbfQmNVT8gyoCfmvh"}, networks:['LTC']}
+    ];
+      
+
+    const cryptoList = document.getElementById('cryptoList');
+    const addressBox = document.getElementById('addressBox');
+    const networkSelect = document.getElementById('networkSelect');
+    const copyBtn = document.getElementById('copyBtn');
+    const summaryCoin = document.getElementById('summaryCoin');
+    const summaryAmount = document.getElementById('summaryAmount');
+    const summaryNetwork = document.getElementById('summaryNetwork');
+    const amountInput = document.getElementById('amount');
+
+    let selected = null;
+    function renderList(){
+      cryptoList.innerHTML='';
+      CRYPTOS.forEach(c=>{
+        const el = document.createElement('div'); el.className='crypto-item'; el.dataset.id=c.id;
+        el.innerHTML = `
+          <img src="${c.icon}" alt="${c.id}">
+          <div class="crypto-meta">
+            <strong>${c.name} <span style="font-weight:600;color:var(--muted);font-size:12px">${c.id}</span></strong>
+            <div class="small">${c.desc}</div>
+          </div>
+          <div style="min-width:40px;text-align:right;color:var(--muted)">${c.networks[0]}</div>
+        `;
+        el.addEventListener('click',()=>selectCrypto(c.id));
+        cryptoList.appendChild(el);
+      });
+    }
+
+    function selectCrypto(id){
+      selected = CRYPTOS.find(x=>x.id===id);
+      // mark active
+      document.querySelectorAll('.crypto-item').forEach(it=>it.classList.toggle('active', it.dataset.id===id));
+
+      // populate address box
+      // if multiple networks, show dropdown
+      if(Object.keys(selected.addresses).length>1){
+        networkSelect.innerHTML='';
+        for(const n of selected.networks){
+          const opt = document.createElement('option'); opt.value=n; opt.textContent=n; networkSelect.appendChild(opt);
+        }
+        networkSelect.disabled=false;
+        networkSelect.value=selected.networks[0];
+      } else {
+        networkSelect.innerHTML='';
+        networkSelect.disabled=true;
+      }
+      updateAddressDisplay();
+      updateSummary();
+    }
+
+    function updateAddressDisplay(){
+      if(!selected){ addressBox.textContent='Select a cryptocurrency to see the deposit address.'; return }
+      const net = networkSelect.disabled ? Object.keys(selected.addresses)[0] : networkSelect.value;
+      const addr = selected.addresses[net] || Object.values(selected.addresses)[0];
+      addressBox.innerHTML = `<div style="font-weight:700;">${selected.name} (${net})</div><div style="margin-top:8px;font-family:monospace;color:#0b5ed7">${addr}</div>`;
+      summaryCoin.textContent = `${selected.name} (${selected.id})`;
+      summaryNetwork.textContent = net || '—';
+    }
+
+    networkSelect.addEventListener('change',()=>{ updateAddressDisplay(); updateSummary(); });
+
+    copyBtn.addEventListener('click',()=>{
+      if(!selected){ alert('Select a cryptocurrency first'); return }
+      const net = networkSelect.disabled ? Object.keys(selected.addresses)[0] : networkSelect.value;
+      const addr = selected.addresses[net] || Object.values(selected.addresses)[0];
+      navigator.clipboard.writeText(addr).then(()=>{
+        copyBtn.textContent='Copied!'; setTimeout(()=>copyBtn.textContent='Copy address',1500);
+      }).catch(()=>{ alert('Unable to copy. You can manually select and copy the address.') });
+    });
+
+    document.getElementById('markPaid').addEventListener('click',()=>{
+      const amt = Number(amountInput.value);
+      if(!selected){ alert('Select a cryptocurrency first'); return }
+      if(!amt || amt<=0){ alert('Enter a valid amount'); return }
+      // simple simulated flow
+      alert(`Thanks — we detected a deposit request for ${amt} ${selected.id}. After required confirmations your balance will update.`);
+    });
+
+    document.getElementById('resetBtn').addEventListener('click',()=>{
+      selected = null; document.querySelectorAll('.crypto-item').forEach(it=>it.classList.remove('active'));
+      addressBox.textContent='Select a cryptocurrency to see the deposit address.'; networkSelect.disabled=true; networkSelect.innerHTML=''; amountInput.value=''; updateSummary();
+    });
+
+    function updateSummary(){
+      summaryAmount.textContent = amountInput.value ? amountInput.value : '—';
+      summaryCoin.textContent = selected ? `${selected.name} (${selected.id})` : '—';
+      summaryNetwork.textContent = (selected && !networkSelect.disabled) ? networkSelect.value : (selected ? (Object.keys(selected.addresses)[0]||'—') : '—');
+    }
+
+    amountInput.addEventListener('input',updateSummary);
+
+    // initial render
+    renderList();
+  </script>
+    <style>
+          :root{
+      --bg: #0b0b0b;
+      --card: #0f0f10;
+      --muted: #bdbdbd;
+      --white: #ffffff;
+      --accent: #ff7a18;
+      --accent-2: #ff9a3a;
+      --glass: rgba(255,255,255,0.03);
+      --glass-2: rgba(255,255,255,0.02);
+      font-family: Inter, "Poppins", system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
+    }
+       .cta{background:linear-gradient(90deg,var(--accent),var(--accent-2));padding:9px 14px;border-radius:10px;color:var(--bg);font-weight:800;cursor:pointer}
+    .chat-toggle{position:fixed;right:20px;bottom:20px;z-index:200}
+    .chat-btn{width:64px;height:64px;border-radius:999px;background:linear-gradient(135deg,var(--accent),#ffb47a);display:flex;align-items:center;justify-content:center;box-shadow:0 10px 40px rgba(255,122,24,0.15);border:none;cursor:pointer;font-size:26px}
+    .chat-window{position:fixed;right:20px;bottom:96px;width:340px;max-height:520px;background:linear-gradient(180deg,#0d0d0d,#0b0b0b);border-radius:12px;border:1px solid rgba(255,255,255,0.03);box-shadow:0 10px 40px rgba(0,0,0,0.6);overflow:hidden;display:none;flex-direction:column}
+    .chat-header{display:flex;align-items:center;justify-content:space-between;padding:12px 14px;background:linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));border-bottom:1px solid rgba(255,255,255,0.02)}
+    .chat-body{padding:12px;overflow:auto;flex:1;display:flex;flex-direction:column;gap:8px}
+    .msg{max-width:78%;padding:10px;border-radius:10px}
+    .msg.user{align-self:flex-end;background:linear-gradient(90deg,var(--accent),#ff9a3a);color:var(--bg)}
+    .msg.bot{align-self:flex-start;background:rgba(255,255,255,0.02);color:var(--muted)}
+    .chat-input{display:flex;padding:10px;border-top:1px solid rgba(255,255,255,0.02);gap:8px}
+    .chat-input input{flex:1;padding:10px;border-radius:10px;border:1px solid rgba(255,255,255,0.03);background:transparent;color:var(--white)}
+  </style>
+    <div class="chat-toggle">
+    <button class="chat-btn" id="chat-open" title="Live Chat">💬</button>
+  </div>
+
+  <div class="chat-window" id="chat-window" role="dialog" aria-hidden="true">
+    <div class="chat-header">
+      <div style="display:flex;gap:10px;align-items:center">
+        <div style="width:36px;height:36px;border-radius:8px;background:linear-gradient(135deg,var(--accent),#ffb47a);display:flex;align-items:center;justify-content:center;color:var(--bg);font-weight:800">EO</div>
+        <div>
+          <div style="color:var(--white);font-weight:800">Live Chat</div>
+          <div style="font-size:12px;color:var(--muted)">Online •</div>
+        </div>
+      </div>
+      <div style="display:flex;gap:8px;align-items:center">
+        <button style="background:transparent;border:1px solid rgba(255,255,255,0.03);padding:6px;border-radius:8px;color:var(--muted)" id="chat-minimize">_</button>
+        <button style="background:transparent;border:1px solid rgba(255,255,255,0.03);padding:6px;border-radius:8px;color:var(--muted)" id="chat-close">×</button>
+      </div>
+    </div>
+
+    <div class="chat-body" id="chat-body">
+      <div class="msg bot">Hey! 👋 How can I help you with trading or copy trading today?</div>
+    </div>
+
+    <div class="chat-input">
+      <input id="chat-input" placeholder="Type your message..." aria-label="Chat input">
+        <a  href="mailto:expressoptionofficial@gmail.com"><button class="cta" id="chat-send">Send</button></a>
+    </div>
+  </div>
+
+  <script>
+   /* --- Chat logic (demo) --- */
+    const chatOpen = document.getElementById('chat-open');
+    const chatWindow = document.getElementById('chat-window');
+    const chatClose = document.getElementById('chat-close');
+    const chatMin = document.getElementById('chat-minimize');
+    const chatSend = document.getElementById('chat-send');
+    const chatBody = document.getElementById('chat-body');
+    const chatInput = document.getElementById('chat-input');
+
+    chatOpen.addEventListener('click', ()=>{ chatWindow.style.display='flex'; chatOpen.style.display='none'; scrollChat(); });
+    chatClose.addEventListener('click', ()=>{ chatWindow.style.display='none'; chatOpen.style.display='inline-flex'; });
+    chatMin.addEventListener('click', ()=>{ chatWindow.style.display='none'; chatOpen.style.display='inline-flex'; });
+
+    function appendMessage(text, from='bot'){
+      const d = document.createElement('div'); d.className='msg ' + (from==='user'?'user':'bot'); d.textContent = text; chatBody.appendChild(d); scrollChat();
+    }
+    function scrollChat(){ chatBody.scrollTop = chatBody.scrollHeight; }
+    chatSend.addEventListener('click', sendChat);
+    chatInput.addEventListener('keydown', (e)=>{ if(e.key==='Enter') sendChat(); });
+
+    function sendChat(){
+      const v = chatInput.value.trim(); if(!v) return; appendMessage(v,'user'); chatInput.value=''; setTimeout(()=>{ appendMessage('Steeve: Thanks — we received your message: "'+v+'". An agent will reply shortly.','bot'); }, 900);
+    }
+
+  </script>
+</body>
+</html>
