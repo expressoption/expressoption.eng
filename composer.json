@@ -1,0 +1,10 @@
+{
+    "name":"expressoption/mixed-php-site",
+    "description": " A website with HTML, CSS, and PHP",
+    "require": {
+    "php": ">=8.0"
+},
+"scripts": {
+    "start":"php -s 0.0.0.0:$PORT -t ."
+}
+}
