@@ -378,9 +378,9 @@ include 'db.php';
                         <i class="ni ni-cart text-dark text-gradient text-lg opacity-10" aria-hidden="true"></i>
                       </div>
                       <h5 class="text-white font-weight-bolder mb-0 mt-3">
-                    0
+                    $0.00
                       </h5>
-                      <span class="text-white text-sm">Purchases</span>
+                      <span class="text-white text-sm">Deposit</span>
                     </div>
                     <div class="col-4">
                       <div class="dropdown text-end mb-6">
