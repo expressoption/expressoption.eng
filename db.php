@@ -1,13 +1,13 @@
 <?php
-require 'vendor/autoload.php'; // if using Composer
+require 'vendor/autoload.php';
 
-$mongoUri = getenv('MONGO_URI'); // Get URI from Render environment variable
+$mongoUri = getenv('MONGO_URI');
 
 try {
     $client = new MongoDB\Client($mongoUri);
-    $db = $client->selectDatabase('mydatabase'); // change to your actual DB name
-    echo "✅ Connected to MongoDB successfully!";
+    $db = $client->selectDatabase('mydatabase'); // name your DB
+    $collection = $db->selectCollection('users');
 } catch (Exception $e) {
-    echo "❌ Connection failed: " . $e->getMessage();
+    die("Database connection failed: " . $e->getMessage());
 }
 ?>
