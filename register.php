@@ -1,49 +1,34 @@
 <?php
 include 'db.php';
 
-$error = '';
-if ($_SERVER['REQUEST_METHOD'] == 'POST') {
-    $username = trim($_POST['username'] ?? '');
-    $email = trim($_POST['email'] ?? '');
-    $password = trim($_POST['password'] ?? '');
-    $confirm_password = trim($_POST['confirm_password'] ?? '');
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    $name  = $_POST['name'] ?? '';
+    $email = $_POST['email'] ?? '';
+    $password = $_POST['password'] ?? '';
 
-    // Validate inputs
-    if (empty($username) || empty($email) || empty($password)) {
-        $error = 'All fields are required.';
-    } elseif ($password !== $confirm_password) {
-        $error = 'Passwords do not match.';
-    } elseif (strlen($password) < 8) {
-        $error = 'Password must be at least 8 characters long.';
-    } else {
-        if ($error) {
-    echo "<p style='color:red;'>$error</p>";
-    exit; // 🔴 stop here if there’s any error
-} else {
-    // ✅ Safe to continue (check if user exists, then save)
-}
-        // Check if username or email already exists
-        $stmt = $pdo->prepare("SELECT id FROM users WHERE username = ? OR email = ?");
-        $stmt->execute([$username, $email]);
-        
-        if ($stmt->rowCount() > 0) {
-            $error = 'Username or email already exists.';
+    if ($name && $email && $password) {
+        // Hash password for security
+        $hashedPassword = password_hash($password, PASSWORD_BCRYPT);
+
+        // Insert into MongoDB collection
+        $insertResult = $collection->insertOne([
+            'name' => $name,
+            'email' => $email,
+            'password' => $hashedPassword,
+            'created_at' => new MongoDB\BSON\UTCDateTime()
+        ]);
+
+        if ($insertResult->getInsertedCount() === 1) {
+            echo "✅ Registration successful!";
         } else {
-            // Hash the password
-            $hashed_password = password_hash($password, PASSWORD_DEFAULT);
-            
-            // Insert new user
-            $stmt = $pdo->prepare("INSERT INTO users (username, email, password) VALUES (?, ?, ?)");
-            if ($stmt->execute([$username, $email, $hashed_password])) {
-                header('Location: login.php?registered=1');
-                exit;
-            } else {
-                $error = 'Registration failed. Please try again.';
-            }
+            echo "❌ Failed to register user.";
         }
+    } else {
+        echo "⚠️ Please fill in all fields.";
     }
 }
 ?>
+
 
 
 <!DOCTYPE html>
