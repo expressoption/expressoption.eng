@@ -1,30 +1,53 @@
 <?php
-include 'db.php';
+require 'db.php';
+session_start();
+
+$error = ''; // Initialize to avoid undefined variable warnings
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    $name  = $_POST['name'] ?? '';
-    $email = $_POST['email'] ?? '';
-    $password = $_POST['password'] ?? '';
+    $username = trim($_POST['username'] ?? '');
+    $email = trim($_POST['email'] ?? '');
+    $password = trim($_POST['password'] ?? '');
+    $confirm_password = trim($_POST['confirm_password'] ?? '');
 
-    if ($name && $email && $password) {
-        // Hash password for security
-        $hashedPassword = password_hash($password, PASSWORD_BCRYPT);
-
-        // Insert into MongoDB collection
-        $insertResult = $collection->insertOne([
-            'name' => $name,
-            'email' => $email,
-            'password' => $hashedPassword,
-            'created_at' => new MongoDB\BSON\UTCDateTime()
+    // Basic validation
+    if (empty($username) || empty($email) || empty($password) || empty($confirm_password)) {
+        $error = 'All fields are required.';
+    } elseif ($password !== $confirm_password) {
+        $error = 'Passwords do not match.';
+    } else {
+        // Check if username or email already exists
+        $existingUser = $users->findOne([
+            '$or' => [
+                ['username' => $username],
+                ['email' => $email]
+            ]
         ]);
 
-        if ($insertResult->getInsertedCount() === 1) {
-            echo "✅ Registration successful!";
+        if ($existingUser) {
+            $error = 'Username or email already exists.';
         } else {
-            echo "❌ Failed to register user.";
+            // Hash password
+            $hashedPassword = password_hash($password, PASSWORD_BCRYPT);
+
+            // Insert user document
+            $result = $users->insertOne([
+                'username' => $username,
+                'email' => $email,
+                'password' => $hashedPassword,
+                'balance' => 0,
+                'last_profit' => 0,
+                'created_at' => new MongoDB\BSON\UTCDateTime()
+            ]);
+
+            if ($result->getInsertedCount() > 0) {
+                $_SESSION['user_id'] = (string)$result->getInsertedId();
+                header('Location: dashboard.php');
+                exit;
+            } else {
+                $error = 'Registration failed. Please try again.';
+            }
         }
-    } else {
-        echo "⚠️ Please fill in all fields.";
     }
 }
 ?>
