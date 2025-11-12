@@ -1,20 +1,19 @@
 <?php
-require __DIR__ . '/vendor/autoload.php';
-use MongoDB\Client;
-use MongoDB\BSON\ObjectId;
+require 'vendor/autoload.php';
 
-try {
-    $client = new Client("mongodb://127.0.0.1:27017");
-    $db = $client->selectDatabase('user_auth');
-    $users = $db->selectCollection('users');
-} catch (Exception $e) {
-    die('Could not connect to MongoDB: ' . $e->getMessage());
+// Get connection string from Render environment variable
+$mongoUri = getenv('MONGO_URI');
+
+if (!$mongoUri) {
+    die("❌ MONGO_URI not set in environment variables.");
 }
 
-function toMongoId($id) {
-    if (is_string($id) && preg_match('/^[0-9a-f]{24}$/i', $id)) {
-        return new ObjectId($id);
-    }
-    return $id;
+try {
+    // Connect to MongoDB Atlas
+    $client = new MongoDB\Client($mongoUri);
+    $db = $client->selectDatabase('mydatabase'); // change name if needed
+    $collection = $db->selectCollection('users');
+} catch (Exception $e) {
+    die("❌ Database connection failed: " . $e->getMessage());
 }
 ?>
