@@ -1,18 +1,16 @@
 <?php
 require 'vendor/autoload.php';
 
-// Get connection string from Render environment variable
-$mongoUri = getenv('MONGO_URI');
+$mongoUri = getenv('MONGO_URI'); // from Render environment variables
 
 if (!$mongoUri) {
     die("❌ MONGO_URI not set in environment variables.");
 }
 
 try {
-    // Connect to MongoDB Atlas
     $client = new MongoDB\Client($mongoUri);
-    $db = $client->selectDatabase('mydatabase'); // change name if needed
-    $collection = $db->selectCollection('users');
+    $db = $client->selectDatabase('mydatabase'); // replace with your actual DB name
+    $users = $db->selectCollection('users');     // 👈 this variable name is crucial
 } catch (Exception $e) {
     die("❌ Database connection failed: " . $e->getMessage());
 }
