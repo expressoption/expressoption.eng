@@ -1,13 +1,23 @@
 <?php
-include 'db.php'; // this connects to your database
+require 'db.php';
+header('Content-Type: application/json');
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-  $user_id = $_POST['2'];      // the user number you typed
-  $new_balance = $_POST[''];  // the money you typed
+    $user_id = $_POST['user_id'] ?? null;
+    $new_balance = $_POST['new_balance'] ?? null;
 
-  $stmt = $pdo->prepare("UPDATE users SET balance = ? WHERE id = ?");
-  $stmt->execute([$new_balance, $user_id]);
+    if ($user_id === null || $new_balance === null) {
+        http_response_code(400);
+        echo json_encode(['error' => 'Missing parameters']);
+        exit;
+    }
 
-  echo "✅ Balance updated!";
+    $filter = ['_id' => toMongoId($user_id)];
+    $update = ['$set' => ['balance' => (float)$new_balance]];
+    $result = $users->updateOne($filter, $update);
+
+    echo json_encode([
+        'success' => $result->getModifiedCount() > 0 || $result->getMatchedCount() > 0
+    ]);
 }
 ?>
