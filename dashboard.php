@@ -1,28 +1,22 @@
 <?php
+require 'db.php';
 session_start();
-include 'db.php';
-
-$user_id = $_SESSION['user_id'];
-
-$stmt = $pdo->prepare("SELECT balance FROM users WHERE id = ?");
-$stmt->execute([$user_id]);
-$user = $stmt->fetch();
-
-$balance = $user['balance'];
-?>
-
-<?php
-if (session_status() === PHP_SESSION_NONE) {
-    session_start();
-}
-
 
 if (!isset($_SESSION['user_id'])) {
     header('Location: login.php');
     exit;
 }
 
-include 'db.php';
+$user_id = $_SESSION['user_id'];
+$user = $users->findOne(['_id' => toMongoId($user_id)]);
+if (!$user) {
+    echo 'User not found';
+    exit;
+}
+
+echo '<h1>Welcome, ' . htmlspecialchars($user['username']) . '</h1>';
+echo '<p>Balance: $' . number_format($user['balance'] ?? 0, 2) . '</p>';
+echo '<p>Last Profit: $' . number_format($user['last_profit'] ?? 0, 2) . '</p>';
 ?>
 
 
