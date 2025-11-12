@@ -1,33 +1,39 @@
 <?php
-include 'db.php';
-
+require 'db.php';
 session_start();
 
-$error = '';
-if ($_SERVER['REQUEST_METHOD'] == 'POST') {
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $username = trim($_POST['username'] ?? '');
     $password = trim($_POST['password'] ?? '');
 
     if (empty($username) || empty($password)) {
         $error = 'Please enter both username and password.';
     } else {
-        // Check user credentials
-        $stmt = $pdo->prepare("SELECT id, username, password FROM users WHERE username = ?");
-        $stmt->execute([$username]);
-        $user = $stmt->fetch();
-
-        if ($user && password_verify($password, $user['password'])) {
-            $_SESSION['user_id'] = $user['id'];
-            $_SESSION['username'] = $user['username'];
-            header('Location: dashboard.php');
-            exit;
+        $user = $users->findOne(['username' => $username]);
+        if ($user) {
+            $stored = $user['password'] ?? null;
+            $ok = false;
+            if ($stored !== null) {
+                if (strpos($stored, '$2y$') === 0 || strpos($stored, '$argon2') === 0) {
+                    $ok = password_verify($password, $stored);
+                } else {
+                    $ok = ($password === $stored);
+                }
+            }
+            if ($ok) {
+                session_regenerate_id(true);
+                $_SESSION['user_id'] = (string)$user['_id'];
+                header('Location: dashboard.php');
+                exit;
+            } else {
+                $error = 'Invalid username or password.';
+            }
         } else {
             $error = 'Invalid username or password.';
         }
     }
 }
 ?>
-
 
 <!DOCTYPE html>
 <html lang="en">
